@@ -6,8 +6,6 @@
 
 I design and ship secure, reliable software—from polished user experiences and real-time applications to backend APIs, data platforms, cloud deployments, and payment-connected systems.
 
-[![Profile views](https://komarev.com/ghpvc/?username=Collinomics&style=flat-square&color=0969da)](https://github.com/Collinomics)
-
 </div>
 
 ## What I do
