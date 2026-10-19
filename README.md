@@ -28,7 +28,7 @@ I'm **Collins Muzira**, an ICT student and developer interested in full-stack ap
 > status      Open to learning, collaboration and interesting projects
 ```
 
-## `> technology --stack` ⚡
+## `> technology --arsenal` ⚡
 
 **Languages & frontend**
 
