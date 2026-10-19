@@ -28,7 +28,7 @@ I'm **Collins Muzira**, an ICT student and developer interested in full-stack ap
 > status      Open to learning, collaboration and interesting projects
 ```
 
-## `> technology --arsenal` ⚡
+## `> technology --stack` ⚡
 
 **Languages & frontend**
 
@@ -42,15 +42,44 @@ I'm **Collins Muzira**, an ICT student and developer interested in full-stack ap
 
 ## `> projects --featured` 🚀
 
-| Project | What it explores | Repository |
-|:--|:--|:--|
-| **KYU AI Course Recommendation & Admissions** | Education-focused recommendations and admissions workflows | [View source ↗](https://github.com/Collinomics/kyu-ai-cris) |
-| **HMS** | Application development and system design | [View source ↗](https://github.com/Collinomics/HMS) |
-| **My Profile** | Personal web presence and frontend presentation | [View source ↗](https://github.com/Collinomics/My-profile) |
+### 01 / KYU AI Course Recommendation & Admissions
 
-**More builds and experiments:** [Browse all public repositories ↗](https://github.com/Collinomics?tab=repositories)
+<a href="https://github.com/Collinomics/kyu-ai-cris"><img src="assets/projects/kyu-ai-cris.svg" width="100%" alt="Designed neon project card for KYU AI Course Recommendation and Admissions" /></a>
 
-> Some projects are ongoing. Check each repository for its latest features, screenshots and setup instructions.
+**An education-focused software project** exploring course recommendations and admissions information workflows.
+
+![Python](https://img.shields.io/badge/Python-0D1117?style=flat-square&logo=python&logoColor=3776AB) ![Web App](https://img.shields.io/badge/Web_Application-0D1117?style=flat-square&logo=googlechrome&logoColor=00E5FF) ![Education](https://img.shields.io/badge/Education-0D1117?style=flat-square&logo=googlescholar&logoColor=BD78FF)
+
+**Repository includes:** an application entry point (`app.py`), routes, forms, templates, data models and database setup files.
+
+[**↗ Explore source code**](https://github.com/Collinomics/kyu-ai-cris) · *Live demo not publicly verified*
+
+---
+
+### 02 / Personal Web Profile
+
+<a href="https://github.com/Collinomics/My-profile"><img src="assets/projects/my-profile.svg" width="100%" alt="Designed neon project card for personal web profile" /></a>
+
+**A personal frontend project** exploring online presence, page structure and visual presentation.
+
+![HTML](https://img.shields.io/badge/HTML-0D1117?style=flat-square&logo=html5&logoColor=E34F26) ![Frontend](https://img.shields.io/badge/Frontend-0D1117?style=flat-square&logo=googlechrome&logoColor=00E5FF) ![Portfolio](https://img.shields.io/badge/Portfolio-0D1117?style=flat-square&logo=githubpages&logoColor=BD78FF)
+
+**Repository includes:** `index.html`, graphics and supporting images.
+
+[**↗ Explore source code**](https://github.com/Collinomics/My-profile) · *Live demo not publicly verified*
+
+---
+
+<details>
+<summary><b>Other repositories and reference work</b></summary>
+<br/>
+
+- [HMS — archived repository](https://github.com/Collinomics/HMS). Its README credits another developer; it is listed for transparency, not claimed as an original solo project.
+- [Browse all public repositories ↗](https://github.com/Collinomics?tab=repositories)
+
+</details>
+
+> **Project visuals:** The graphics above are custom-designed project title cards, not screenshots of working applications. Replace them with real screenshots when available. See `SETUP-PROJECT-CARDS.md`.
 
 ## `> github --analytics` 📊
 

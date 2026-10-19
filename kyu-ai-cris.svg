@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="460" viewBox="0 0 960 460" role="img" aria-label="Decorative graphic for KYU AI COURSE RECOMMENDER project">
+ <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080d19"/><stop offset="1" stop-color="#191134"/></linearGradient><linearGradient id="accent"><stop stop-color="#00e5ff"/><stop offset="1" stop-color="#a855f7"/></linearGradient><pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#46526c" stroke-opacity=".16"/></pattern></defs>
+ <rect width="960" height="460" rx="20" fill="url(#bg)"/><rect width="960" height="460" fill="url(#grid)"/><rect x="20" y="20" width="920" height="420" rx="16" fill="none" stroke="url(#accent)" stroke-opacity=".7" stroke-width="2"/>
+ <path d="M28 92H932" stroke="#26314c"/><circle cx="55" cy="58" r="7" fill="#00e5ff"/><circle cx="80" cy="58" r="7" fill="#a855f7"/><circle cx="105" cy="58" r="7" fill="#4b5268"/><text x="140" y="65" fill="#8b9cb6" font-family="monospace" font-size="18">COLLINOMICS / PROJECTS</text>
+ <text x="55" y="145" fill="#00e5ff" font-family="monospace" font-size="22" letter-spacing="3">01 / EDUCATION TECHNOLOGY</text>
+ <text x="52" y="223" fill="#ffffff" font-family="Arial,sans-serif" font-size="58" font-weight="bold">KYU AI COURSE</text><text x="52" y="294" fill="#ffffff" font-family="Arial,sans-serif" font-size="58" font-weight="bold">RECOMMENDER</text>
+ <rect x="54" y="337" width="830" height="58" rx="10" fill="#101e35" stroke="#00e5ff" stroke-opacity=".55"/><text x="75" y="373" fill="#b8c9dd" font-family="monospace" font-size="20">Python  •  Web Application  •  Admissions</text>
+ <path d="M770 180L865 120M800 214L900 150M840 252L900 212" stroke="url(#accent)" stroke-width="4" stroke-linecap="round" opacity=".45"/>
+ </svg>
