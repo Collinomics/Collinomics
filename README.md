@@ -14,53 +14,69 @@
 [**PROJECTS ↓**](#-featured-projects) · [**TECHNOLOGY ↓**](#-technology-stack) · [**ACTIVITY ↓**](#-github-statistics)
 </div>
 
-<table><tr><td width="52%" valign="top">
+<table>
+<tr>
+<td width="62%" valign="top">
 
-### > Hello, World!
-
-I'm **Collins Muzira (Collinomics)**, a software developer and ICT student at **Kyambogo University, Uganda**.
-
-I enjoy building useful web applications, backend systems and practical tools that make complex tasks easier. My interests include campus technology, authentication, databases and AI-assisted software.
-
-**Building. Learning. Improving.**
-
-</td><td width="48%" valign="top">
-
-### > About Me
-
-**Location:** Kampala, Uganda 🇺🇬
-
-**Focus:** Web apps · APIs · Databases
-
-**Interests:** Campus platforms · AI tools · Security
-
-**Currently:** Building projects and expanding my skills
-
-**Collaboration:** Open to useful ideas
-
-</td></tr></table>
+<h3>⌁ About Me</h3>
+<p>I'm <b>Collins Muzira (Collinomics)</b>, a software developer and ICT student at <b>Kyambogo University, Uganda</b>.</p>
+<p>I enjoy building useful web applications, backend systems and practical tools that make complex tasks easier. My interests include campus technology, authentication, databases and AI-assisted software.</p>
+<p><b>Building. Learning. Improving.</b></p>
+<p>📍 Kampala, Uganda &nbsp; · &nbsp; 🎓 Kyambogo University<br/>
+💻 Web apps · APIs · Databases<br/>
+✨ Campus platforms · AI tools · Security<br/>
+🤝 Open to useful ideas</p>
+</td>
+<td width="38%" valign="middle" align="center">
+<img src="https://user-images.githubusercontent.com/74038190/229223263-cf2e4b07-2615-4f87-9c38-e37600f8381a.gif" width="300" alt="Looping animation of a developer coding at a computer" />
+</td>
+</tr>
+</table>
 
 ### ⚡ Technology Stack
 
 <div align="center">
 
-<img src="./assets/v1e-tech.svg" width="100%" alt="Custom neon technology stack panel" />
+<b>Languages and Frontend</b><br/>
+<img src="https://techstack-generator.vercel.app/python-icon.svg" height="64" alt="Animated Python icon" />
+<img src="https://techstack-generator.vercel.app/js-icon.svg" height="64" alt="Animated JavaScript icon" />
+<img src="https://skillicons.dev/icons?i=php,html,css,cpp,c&perline=5" height="53" alt="PHP, HTML, CSS, C++ and C" />
 
-<img src="https://skillicons.dev/icons?i=python,js,php,html,css,cpp,c,laravel,flask,tailwind,mysql,git,github,linux,vscode&perline=15" width="86%" alt="Icons representing the developer technology stack" />
+<br/><br/>
+<b>Frameworks and Backend</b><br/>
+<img src="https://skillicons.dev/icons?i=laravel,flask,tailwind&perline=3" height="55" alt="Laravel, Flask and Tailwind CSS" />
+
+<br/><br/>
+<b>Data and Development Tools</b><br/>
+<img src="https://techstack-generator.vercel.app/mysql-icon.svg" height="64" alt="Animated MySQL icon" />
+<img src="https://techstack-generator.vercel.app/github-icon.svg" height="64" alt="Animated GitHub icon" />
+<img src="https://skillicons.dev/icons?i=git,linux,vscode&perline=3" height="53" alt="Git, Linux and VS Code" />
+
 </div>
 
 ### 🚀 Featured Projects
 
+<table>
+<tr>
+<td width="50%" valign="top">
 <a href="https://github.com/Collinomics/kyu-ai-cris"><img src="./assets/v1e-project-kyu.svg" width="100%" alt="KYU AI Course Recommendation and Admissions illustrated project card" /></a>
-
-**KYU AI Course Recommendation & Admissions** — A Python/Flask project exploring course recommendations, admissions workflows and a database-backed application architecture. **[Explore source ↗](https://github.com/Collinomics/kyu-ai-cris)**
-
+<h4>🎓 KYU AI Course Recommendation &amp; Admissions</h4>
+<p>A Python/Flask project exploring course recommendations, admissions workflows and a database-backed application architecture.</p>
+<p><code>Python</code> <code>Flask</code> <code>Database</code></p>
+<p><a href="https://github.com/Collinomics/kyu-ai-cris"><b>Explore source ↗</b></a></p>
+</td>
+<td width="50%" valign="top">
 <a href="https://github.com/Collinomics/My-profile"><img src="./assets/v1e-project-profile.svg" width="100%" alt="Personal web profile illustrated project card" /></a>
-
-**My Profile** — A personal website focusing on frontend development and web presentation. **[Explore source ↗](https://github.com/Collinomics/My-profile)**
+<h4>🌐 My Profile</h4>
+<p>A personal website focusing on frontend development and web presentation.</p>
+<p><code>HTML</code> <code>Frontend</code> <code>Web Design</code></p>
+<p><a href="https://github.com/Collinomics/My-profile"><b>Explore source ↗</b></a></p>
+</td>
+</tr>
+</table>
 
 <div align="center">
-<a href="https://github.com/Collinomics?tab=repositories"><img src="https://img.shields.io/badge/VIEW_ALL_PUBLIC_REPOSITORIES-101629?style=for-the-badge&logo=github&logoColor=00E5FF" alt="Browse public repositories"/></a>
+<a href="https://github.com/Collinomics?tab=repositories"><img src="https://img.shields.io/badge/VIEW_ALL_PUBLIC_REPOSITORIES-101629?style=for-the-badge&logo=github&logoColor=00E5FF" alt="Browse public repositories" /></a>
 
 <sub>Project visuals are original illustrations, not screenshots. Live demo links will be added once verified.</sub>
 </div>
