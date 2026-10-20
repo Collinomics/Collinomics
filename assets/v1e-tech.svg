@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="226" viewBox="0 0 1200 226" role="img"><defs>
+<linearGradient id="bg" x2="1" y2="1"><stop stop-color="#050818"/><stop offset=".55" stop-color="#09112c"/><stop offset="1" stop-color="#0a0730"/></linearGradient>
+<linearGradient id="neon"><stop stop-color="#00ebff"/><stop offset=".55" stop-color="#3979ff"/><stop offset="1" stop-color="#ed49f9"/></linearGradient>
+<linearGradient id="surface" x2="1" y2="1"><stop stop-color="#0d1e40"/><stop offset="1" stop-color="#180d35"/></linearGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#193355" stroke-opacity=".40"/></pattern>
+<filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
+</defs><rect width="1200" height="226" rx="16" fill="url(#bg)"/><rect x="3" y="3" width="1194" height="220" rx="14" fill="none" stroke="url(#neon)" stroke-width="2"/>
+<text x="28" y="43" font-family="monospace" font-size="23" fill="#6cefff" font-weight="bold">&lt;/&gt; TECHNOLOGY STACK</text>
+<rect x="30" y="62" width="368" height="131" rx="11" fill="url(#surface)" stroke="#0baeea" stroke-width="1.5"/><rect x="416" y="62" width="368" height="131" rx="11" fill="url(#surface)" stroke="#7950e4" stroke-width="1.5"/><rect x="802" y="62" width="368" height="131" rx="11" fill="url(#surface)" stroke="#0dc8db" stroke-width="1.5"/>
+<text x="54" y="92" fill="#45edff" font-family="monospace" font-size="17">01 / LANGUAGES</text>
+<text x="54" y="129" fill="#e9f2ff" font-family="Arial" font-size="22" font-weight="bold">Python  ·  JavaScript</text><text x="54" y="163" fill="#b3bce6" font-family="Arial" font-size="19">PHP · HTML · CSS · C++ · C</text>
+<text x="441" y="92" fill="#d8a0ff" font-family="monospace" font-size="17">02 / FRAMEWORKS</text><text x="441" y="130" fill="#e9f2ff" font-family="Arial" font-size="25" font-weight="bold">Laravel · Flask</text><text x="441" y="163" fill="#b3bce6" font-family="Arial" font-size="20">Tailwind CSS</text>
+<text x="828" y="92" fill="#45edff" font-family="monospace" font-size="17">03 / DEVELOPMENT</text><text x="828" y="130" fill="#e9f2ff" font-family="Arial" font-size="22" font-weight="bold">MySQL · Git · GitHub</text><text x="828" y="163" fill="#b3bce6" font-family="Arial" font-size="20">Linux · VS Code</text></svg>
