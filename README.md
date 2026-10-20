@@ -22,7 +22,7 @@
 <p><code>&gt; about.init()</code> <b>Collins Muzira / Collinomics</b></p>
 <p><b>Software developer</b> and <b>ICT student</b> at Kyambogo University, Uganda.</p>
 <p>I build <b>web applications</b>, <b>backend systems</b>, and tools that solve practical problems. My interests include campus technology, authentication, databases, and AI-assisted software.</p>
-<p><code>BUILD</code> &nbsp; → &nbsp; <code>LEARN</code> &nbsp; → &nbsp; <code>IMPROVE</code></p>
+<img src="./assets/polish-terminal.svg" width="100%" alt="Animated developer principles: build, learn, improve, repeat" />
 <p><b>Location</b> · Kampala, Uganda<br/><b>Focus</b> · Web apps, APIs, databases<br/><b>Interests</b> · Campus platforms, AI tools, security<br/><b>Status</b> · Open to collaboration</p>
 </td>
 <td width="38%" valign="middle" align="center">
