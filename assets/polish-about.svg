@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="88" viewBox="0 0 1200 88" role="img" aria-label="ABOUT section">
+<defs><linearGradient id="edge" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#00E5FF"/><stop offset="1" stop-color="#D946EF"/></linearGradient><linearGradient id="bg" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#091529"/><stop offset="1" stop-color="#100B25"/></linearGradient></defs>
+<rect x="2" y="2" width="1196" height="84" rx="14" fill="url(#bg)" stroke="url(#edge)" stroke-width="2"/>
+<path d="M28 64h1143" stroke="#22456A" stroke-width="1"/><rect x="23" y="26" width="9" height="9" rx="2" fill="#00E5FF"><animate attributeName="opacity" values="1;.35;1" dur="2.8s" repeatCount="indefinite"/></rect>
+<text x="48" y="55" font-size="27" font-weight="700" font-family="monospace" fill="#F0F6FF">&gt; ABOUT</text>
+<rect x="137" y="29" width="11" height="27" rx="1" fill="#00E5FF"><animate attributeName="opacity" values="1;0;1" dur="1.15s" repeatCount="indefinite"/></rect>
+<text x="1165" y="52" text-anchor="end" font-size="15" font-family="monospace" letter-spacing="1.2" fill="#77DFFA">PROFILE / INTRODUCTION</text>
+</svg>
