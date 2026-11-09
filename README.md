@@ -37,8 +37,8 @@
 <div align="center">
 
 <sub><b>01 / LANGUAGES &amp; FRONTEND</b></sub><br/>
-<img src="https://techstack-generator.vercel.app/python-icon.svg" height="64" alt="Animated Python icon" />
-<img src="https://techstack-generator.vercel.app/js-icon.svg" height="64" alt="Animated JavaScript icon" />
+<img src="https://skillicons.dev/icons?i=python" height="58" alt="Python icon" />
+<img src="https://skillicons.dev/icons?i=js" height="58" alt="JavaScript icon" />
 <img src="https://skillicons.dev/icons?i=php,html,css,cpp,c&perline=5" height="53" alt="PHP, HTML, CSS, C++ and C" />
 
 <br/><br/>
@@ -47,8 +47,8 @@
 
 <br/><br/>
 <sub><b>03 / DATA &amp; DEVELOPMENT TOOLS</b></sub><br/>
-<img src="https://techstack-generator.vercel.app/mysql-icon.svg" height="64" alt="Animated MySQL icon" />
-<img src="https://techstack-generator.vercel.app/github-icon.svg" height="64" alt="Animated GitHub icon" />
+<img src="https://skillicons.dev/icons?i=mysql" height="58" alt="MySQL icon" />
+<img src="https://skillicons.dev/icons?i=github" height="58" alt="GitHub icon" />
 <img src="https://skillicons.dev/icons?i=git,linux,vscode&perline=3" height="53" alt="Git, Linux and VS Code" />
 
 </div>
@@ -85,8 +85,8 @@
 <img src="./assets/polish-stats.svg" width="100%" alt="GitHub statistics neon section header" />
 
 <div align="center">
-<img height="170" src="https://github-readme-stats.vercel.app/api?username=Collinomics&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=00E5FF&icon_color=BB86FC&text_color=E6EDF3" alt="Live GitHub statistics"/>
-<img height="170" src="https://github-readme-stats.vercel.app/api/top-langs/?username=Collinomics&layout=compact&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=00E5FF&text_color=E6EDF3" alt="Public repository languages"/>
+<img height="170" src="https://github-stats-extended.vercel.app/api?username=Collinomics&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=00E5FF&icon_color=BB86FC&text_color=E6EDF3" alt="Live GitHub statistics"/>
+<img height="170" src="https://github-stats-extended.vercel.app/api/top-langs/?username=Collinomics&layout=compact&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=00E5FF&text_color=E6EDF3" alt="Public repository languages"/>
 
 <img src="https://streak-stats.demolab.com?user=Collinomics&theme=tokyonight&hide_border=true&background=0D1117&ring=00E5FF&fire=BB86FC&currStreakLabel=00E5FF" width="65%" alt="Contribution streak"/>
 
