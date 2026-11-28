@@ -37,7 +37,7 @@ jobs:
 
       - name: Validate workflow YAML
         run: |
-          ruby -e 'require "yaml"; ARGV.each { |f| YAML.parse_file(f) }' .github/workflows/*.yml .github/workflows/*.yaml
+          ruby -e 'require "yaml"; Dir.glob(".github/workflows/*.{yml,yaml}").each { |f| YAML.parse_file(f) }; YAML.parse_file(".github/dependabot.yml")'
 
       - name: Run full portfolio maintenance checks
         run: python3 scripts/daily_maintenance.py
