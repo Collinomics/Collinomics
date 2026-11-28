@@ -1,0 +1,70 @@
+name: Weekly Repository Backup
+
+on:
+  schedule:
+    # Sunday 08:00 Kampala time (UTC+3)
+    - cron: "0 5 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-repository-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: source
+
+      - name: Checkout backup branch
+        uses: actions/checkout@v4
+        with:
+          ref: automation-backup
+          path: backup
+          token: ${{ github.token }}
+
+      - name: Create compressed repository snapshot
+        shell: bash
+        run: |
+          date_utc=$(date -u +%F)
+          archive="$RUNNER_TEMP/collinomics-profile-$date_utc.tar.gz"
+          tar -czf "$archive" \
+            --exclude=".git" \
+            --exclude="maintenance/reports" \
+            --exclude="node_modules" \
+            --exclude="dist" \
+            --exclude=".env" \
+            --exclude=".env.*" \
+            --exclude="*.pem" \
+            --exclude="*.key" \
+            --exclude="*.p12" \
+            --exclude="*.pfx" \
+            --exclude="*.sqlite" \
+            --exclude="*.db" \
+            -C source .
+          mkdir -p backup/automation/repository-snapshots
+          cp "$archive" "backup/automation/repository-snapshots/collinomics-profile-$date_utc.tar.gz"
+          git -C backup config user.name "github-actions[bot]"
+          git -C backup config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C backup add automation/repository-snapshots/
+          if git -C backup diff --cached --quiet; then
+            echo "No snapshot changes to commit."
+          else
+            git -C backup commit -m "backup: weekly profile repository snapshot $date_utc"
+            git -C backup push origin automation-backup
+          fi
+
+      - name: Store snapshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-collinomics-repository-backup-${{ github.run_number }}
+          path: ${{ runner.temp }}/collinomics-profile-*.tar.gz
+          if-no-files-found: error
+          retention-days: 90
