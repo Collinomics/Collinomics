@@ -30,7 +30,7 @@ jobs:
             conclusion=$(echo "$latest" | jq -r '.[0].conclusion // "unknown"')
             created=$(echo "$latest" | jq -r '.[0].createdAt // ""')
             url=$(echo "$latest" | jq -r '.[0].url // ""')
-            age_hours=$(python -c 'import sys; from datetime import datetime,timezone; d=datetime.fromisoformat(sys.argv[1].replace("Z","+00:00")); print(int((datetime.now(timezone.utc)-d).total_seconds()/3600)))' "$created" 2>/dev/null || echo 9999)
+            age_hours=$(python -c 'import sys; from datetime import datetime,timezone; d=datetime.fromisoformat(sys.argv[1].replace("Z","+00:00")); print(int((datetime.now(timezone.utc)-d).total_seconds()/3600))' "$created" 2>/dev/null || echo 9999)
             if [ "$age_hours" -gt 36 ]; then
               reason="Daily maintenance run is missing or older than 36 hours (last: $created; $url)."
             elif [ "$conclusion" != "success" ]; then
