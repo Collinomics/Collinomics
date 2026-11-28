@@ -1,8 +1,8 @@
-name: Daily Portfolio Health
+name: Daily Portfolio Maintenance
 
 on:
   schedule:
-    # 06:37 Kampala time (UTC+3); avoids top-of-hour scheduling congestion.
+    # 06:37 Kampala time (UTC+3)
     - cron: "37 3 * * *"
   workflow_dispatch:
   push:
@@ -11,113 +11,70 @@ on:
     paths:
       - "README.md"
       - "assets/**"
-      - ".github/workflows/daily-portfolio-health.yml"
+      - "scripts/**"
 
 permissions:
-  contents: read
+  contents: write
+  issues: write
+
+concurrency:
+  group: daily-portfolio-maintenance
+  cancel-in-progress: false
 
 jobs:
-  health-check:
-    name: Check profile repository health
+  maintenance:
+    name: Profile repository maintenance
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate README and local assets
-        shell: bash
+      - name: Run maintenance checks
+        id: health
+        run: python scripts/daily_maintenance.py
+
+      - name: Open alert issue if maintenance fails
+        if: steps.health.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          python - <<'PY'
-          import os, re, sys
-          from pathlib import Path
-          from datetime import datetime, timezone
+          title="Automated maintenance alert"
+          existing=$(gh issue list --state open --search "in:title $title" --json number --jq '.[0].number // empty')
+          if [ -z "$existing" ]; then
+            gh issue create --title "$title" --body "Daily portfolio maintenance reported a failure. Review the Actions run and attached report: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. This issue will be closed after a successful check."
+          fi
 
-          readme_path = Path("README.md")
-          report_path = Path("daily-health-report.md")
-          issues = []
-          checks = []
+      - name: Publish daily report commit
+        if: always() && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: |
+          if [ ! -d maintenance/reports ]; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add maintenance/reports
+          if git diff --cached --quiet; then
+            echo "No report changes to commit."
+          else
+            git commit -m "chore: publish daily maintenance report [skip ci]"
+            git push origin HEAD:main
+          fi
 
-          if not readme_path.is_file():
-              issues.append("README.md is missing.")
-              readme = ""
-          else:
-              readme = readme_path.read_text(encoding="utf-8", errors="replace")
-              checks.append("README.md exists and is readable.")
-
-          # Required profile sections
-          required_sections = ["TECHNOLOGY", "PROJECTS"]
-          for section in required_sections:
-              if section.lower() in readme.lower():
-                  checks.append(f"Required section found: {section}")
-              else:
-                  issues.append(f"Required section not found: {section}")
-
-          # Collect local image/link references from HTML and Markdown.
-          refs = []
-          for attr in ("src", "href"):
-              refs += re.findall(rf"""\b{attr}\s*=\s*["']([^"']+)["']""", readme, flags=re.I)
-          refs += re.findall(r"!?\[[^\]]*\]\(([^)]+)\)", readme)
-
-          local_refs = set()
-          for raw in refs:
-              raw = raw.strip().split()[0].strip("<>")
-              if not raw or raw.startswith(("#", "http://", "https://", "mailto:", "data:", "javascript:")):
-                  continue
-              local_refs.add(raw.split("#", 1)[0].split("?", 1)[0])
-
-          missing = []
-          for ref in sorted(local_refs):
-              if not ref:
-                  continue
-              target = Path(ref)
-              if not target.exists():
-                  missing.append(ref)
-          if missing:
-              issues.extend(f"Local README reference is missing: {ref}" for ref in missing)
-          else:
-              checks.append(f"All {len(local_refs)} local README references exist.")
-
-          # Ensure the contribution-snake workflow is present and configured for this profile.
-          snake_path = Path(".github/workflows/snake.yml")
-          if not snake_path.is_file():
-              issues.append("Contribution-snake workflow is missing.")
-          else:
-              snake = snake_path.read_text(encoding="utf-8", errors="replace")
-              if "Collinomics" in snake and "target_branch: output" in snake:
-                  checks.append("Contribution-snake workflow exists and targets the output branch.")
-              else:
-                  issues.append("Contribution-snake workflow configuration needs review.")
-
-          external_count = len(re.findall(r'https?://', readme))
-          timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-          status = "PASS" if not issues else "NEEDS ATTENTION"
-          lines = [
-              "# Daily Portfolio Health Report",
-              "",
-              f"- **Run time:** {timestamp}",
-              f"- **Status:** {status}",
-              f"- **External URLs in README:** {external_count} (not network-tested; third-party services may be temporarily unavailable)",
-              "",
-              "## Checks passed",
-          ]
-          lines += [f"- {item}" for item in checks] or ["- None"]
-          lines += ["", "## Issues"]
-          lines += [f"- {item}" for item in issues] or ["- None"]
-          report = "\n".join(lines) + "\n"
-          report_path.write_text(report, encoding="utf-8")
-
-          summary = Path(os.environ["GITHUB_STEP_SUMMARY"])
-          summary.write_text(report, encoding="utf-8")
-          print(report)
-          if issues:
-              sys.exit(1)
-          PY
-
-      - name: Save report as an artifact
+      - name: Upload report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: daily-portfolio-health-report-${{ github.run_number }}
-          path: daily-health-report.md
+          name: portfolio-maintenance-report-${{ github.run_number }}
+          path: maintenance/reports/
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 30
+
+      - name: Close alert after successful checks
+        if: steps.health.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh issue list --state open --search "in:title Automated maintenance alert" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "Daily maintenance is healthy again. Closing this automated alert."
+          fi
