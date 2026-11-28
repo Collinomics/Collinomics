@@ -55,8 +55,10 @@ jobs:
           fi
           if [ "$fallback_age" -gt 36 ]; then
             reason="$reason Fallback workflow is missing or older than 36 hours."
-          elif [ "$fallback_conclusion" != "success" ]; then
+          elif [ "$fallback_conclusion" = "failure" ] || [ "$fallback_conclusion" = "cancelled" ]; then
             reason="$reason Latest fallback workflow concluded '$fallback_conclusion' ($fallback_url)."
+          elif [ "$fallback_conclusion" != "success" ] && [ "$fallback_age" -gt 3 ]; then
+            reason="$reason Fallback workflow has not completed within 3 hours ($fallback_url)."
           fi
 
           sync=$(gh run list --workflow automation-backup.yml --limit 1 --json conclusion,createdAt,url)
@@ -65,8 +67,12 @@ jobs:
           sync_url=$(echo "$sync" | jq -r '.[0].url // ""')
           sync_age=9999
           if [ -n "$sync_created" ]; then sync_age=$(age_hours "$sync_created"); fi
-          if [ "$sync_age" -gt 36 ] || [ "$sync_conclusion" != "success" ]; then
-            reason="$reason Daily automation backup is missing, stale, or unsuccessful (last: $sync_created; $sync_url)."
+          if [ "$sync_age" -gt 36 ]; then
+            reason="$reason Daily automation backup is missing or older than 36 hours (last: $sync_created; $sync_url)."
+          elif [ "$sync_conclusion" = "failure" ] || [ "$sync_conclusion" = "cancelled" ]; then
+            reason="$reason Daily automation backup failed or was cancelled (last: $sync_created; $sync_url)."
+          elif [ "$sync_conclusion" != "success" ] && [ "$sync_age" -gt 3 ]; then
+            reason="$reason Daily automation backup has not completed within 3 hours ($sync_url)."
           fi
 
           weekly=$(gh run list --workflow weekly-repository-backup.yml --limit 1 --json conclusion,createdAt,url)
@@ -75,8 +81,12 @@ jobs:
           weekly_url=$(echo "$weekly" | jq -r '.[0].url // ""')
           weekly_age=9999
           if [ -n "$weekly_created" ]; then weekly_age=$(age_hours "$weekly_created"); fi
-          if [ "$weekly_age" -gt 192 ] || [ "$weekly_conclusion" != "success" ]; then
-            reason="$reason Weekly repository backup is missing, stale, or unsuccessful (last: $weekly_created; $weekly_url)."
+          if [ "$weekly_age" -gt 192 ]; then
+            reason="$reason Weekly repository backup is missing or older than 8 days (last: $weekly_created; $weekly_url)."
+          elif [ "$weekly_conclusion" = "failure" ] || [ "$weekly_conclusion" = "cancelled" ]; then
+            reason="$reason Weekly repository backup failed or was cancelled (last: $weekly_created; $weekly_url)."
+          elif [ "$weekly_conclusion" != "success" ] && [ "$weekly_age" -gt 3 ]; then
+            reason="$reason Weekly repository backup has not completed within 3 hours ($weekly_url)."
           fi
 
           workflow_count=$(gh api "repos/$repo/contents/automation/workflows/current?ref=automation-backup" --jq 'length' 2>/dev/null || echo 0)
