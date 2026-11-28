@@ -12,6 +12,8 @@ on:
       - "README.md"
       - "assets/**"
       - "scripts/**"
+      - ".github/workflows/**"
+      - ".github/dependabot.yml"
 
 permissions:
   contents: write
