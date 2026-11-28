@@ -60,8 +60,10 @@ if svg_errors:
 else: check(f"{svg_count} local SVG file(s) parse correctly")
 
 hrefs=re.findall(r'''<a\b[^>]*\bhref\s*=\s*["']([^"']+)["']''',text,flags=re.I)
+image_srcs=re.findall(r'''<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']''',text,flags=re.I)
 md_links=re.findall(r'''(?<!\!)\[[^\]]+\]\((https?://[^)]+)\)''',text)
-urls=sorted(set(u.strip().rstrip(".,") for u in hrefs+md_links if u.startswith(("http://","https://"))))
+md_images=re.findall(r'''!\[[^\]]*\]\((https?://[^)]+)\)''',text)
+urls=sorted(set(u.strip().rstrip(".,") for u in hrefs+md_links+image_srcs+md_images if u.startswith(("http://","https://"))))
 if len(urls)>20: warn(f"External link checks limited to 20 of {len(urls)} links")
 for u in urls[:20]:
     code=status(u)
@@ -70,13 +72,18 @@ for u in urls[:20]:
     else: check(f"External link OK ({code}): {u}")
 
 wf=sorted((root/".github/workflows").glob("*.yml"))+sorted((root/".github/workflows").glob("*.yaml"))
+dependabot=root/".github/dependabot.yml"
 if wf:
     cmd=["ruby","-e","require 'yaml'; ARGV.each { |f| YAML.parse_file(f) }"]+[str(p) for p in wf]
+    if dependabot.is_file():
+        cmd.append(str(dependabot))
+        check("Dependabot configuration exists")
+    else:
+        warn("Dependabot configuration is missing")
     res=subprocess.run(cmd,capture_output=True,text=True)
-    if res.returncode==0: check(f"YAML parsed for {len(wf)} workflow file(s)")
-    else: fail("Workflow YAML parse error: "+(res.stderr.strip() or res.stdout.strip()))
+    if res.returncode==0: check(f"YAML parsed for {len(wf)} workflow file(s) and Dependabot")
+    else: fail("Workflow/Dependabot YAML parse error: "+(res.stderr.strip() or res.stdout.strip()))
 else: fail("No workflow files found")
-
 snake=root/".github/workflows/snake.yml"
 if snake.is_file() and "Collinomics" in snake.read_text(errors="replace") and "target_branch: output" in snake.read_text(errors="replace"):
     check("Contribution Snake configuration points to the output branch")
