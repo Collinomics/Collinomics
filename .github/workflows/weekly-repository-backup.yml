@@ -2,9 +2,18 @@ name: Weekly Repository Backup
 
 on:
   schedule:
-    # Sunday 08:00 Kampala time (UTC+3)
-    - cron: "0 5 * * 0"
+    # Sunday 07:00 Kampala time (UTC+3)
+    - cron: "0 4 * * 0"
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "assets/**"
+      - "scripts/**"
+      - ".github/workflows/**"
+      - "maintenance/RESTORE.md"
 
 permissions:
   contents: write
@@ -16,25 +25,32 @@ concurrency:
 jobs:
   backup:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Checkout main repository
+      - name: Checkout main repository with full history
         uses: actions/checkout@v4
         with:
           ref: main
           path: source
+          fetch-depth: 0
 
       - name: Checkout backup branch
         uses: actions/checkout@v4
         with:
           ref: automation-backup
           path: backup
-          token: ${{ github.token }}
+          token: \${{ github.token }}
 
-      - name: Create compressed repository snapshot
+      - name: Create and verify compressed snapshot and full-history bundle
         shell: bash
         run: |
+          set -euo pipefail
           date_utc=$(date -u +%F)
           archive="$RUNNER_TEMP/collinomics-profile-$date_utc.tar.gz"
+          bundle="$RUNNER_TEMP/collinomics-full-history-$date_utc.bundle"
+          manifest="$RUNNER_TEMP/backup-manifest-$date_utc.sha256"
+
+          # Source archive: current files, excluding transient and secret-like files.
           tar -czf "$archive" \
             --exclude=".git" \
             --exclude="maintenance/reports" \
@@ -49,22 +65,39 @@ jobs:
             --exclude="*.sqlite" \
             --exclude="*.db" \
             -C source .
+
+          # Full-history bundle: all refs and commit history fetched by checkout.
+          git -C source bundle create "$bundle" --all
+          git -C source bundle verify "$bundle"
+          tar -tzf "$archive" >/dev/null
+
+          (cd "$RUNNER_TEMP" && sha256sum "$(basename "$archive")" "$(basename "$bundle")" > "$(basename "$manifest")")
+          (cd "$RUNNER_TEMP" && sha256sum -c "$(basename "$manifest")")
+
           mkdir -p backup/automation/repository-snapshots
+          mkdir -p backup/automation/git-bundles
+          mkdir -p backup/automation/manifests
           cp "$archive" "backup/automation/repository-snapshots/collinomics-profile-$date_utc.tar.gz"
+          cp "$bundle" "backup/automation/git-bundles/collinomics-full-history-$date_utc.bundle"
+          cp "$manifest" "backup/automation/manifests/backup-manifest-$date_utc.sha256"
+
           git -C backup config user.name "github-actions[bot]"
           git -C backup config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C backup add automation/repository-snapshots/
+          git -C backup add automation/repository-snapshots/ automation/git-bundles/ automation/manifests/
           if git -C backup diff --cached --quiet; then
-            echo "No snapshot changes to commit."
+            echo "Backup branch already up to date."
           else
-            git -C backup commit -m "backup: weekly profile repository snapshot $date_utc"
+            git -C backup commit -m "backup: weekly profile snapshot and history $date_utc"
             git -C backup push origin automation-backup
           fi
 
-      - name: Store snapshot artifact
+      - name: Store verified backups as 90-day artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: weekly-collinomics-repository-backup-${{ github.run_number }}
-          path: ${{ runner.temp }}/collinomics-profile-*.tar.gz
+          name: weekly-collinomics-backup-\${{ github.run_number }}
+          path: |
+            \${{ runner.temp }}/collinomics-profile-*.tar.gz
+            \${{ runner.temp }}/collinomics-full-history-*.bundle
+            \${{ runner.temp }}/backup-manifest-*.sha256
           if-no-files-found: error
           retention-days: 90
