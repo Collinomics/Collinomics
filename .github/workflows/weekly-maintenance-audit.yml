@@ -1,0 +1,45 @@
+name: Weekly Maintenance Audit
+
+on:
+  schedule:
+    # 08:00 Kampala time on Mondays (UTC+3).
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/**"
+      - ".github/dependabot.yml"
+      - "scripts/**"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Validate automation and profile
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile Python maintenance scripts
+        run: python3 -m py_compile scripts/daily_maintenance.py scripts/fallback_maintenance.py
+
+      - name: Validate workflow YAML
+        run: |
+          ruby -e 'require "yaml"; ARGV.each { |f| YAML.parse_file(f) }' .github/workflows/*.yml .github/workflows/*.yaml
+
+      - name: Run full portfolio maintenance checks
+        run: python3 scripts/daily_maintenance.py
+
+      - name: Upload weekly audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-maintenance-audit-${{ github.run_number }}
+          path: maintenance/reports/
+          if-no-files-found: warn
+          retention-days: 30
