@@ -1,0 +1,76 @@
+name: Weekly Portfolio Pulse
+
+on:
+  schedule:
+    # Sunday 10:30 Kampala time (UTC+3)
+    - cron: "30 7 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pulse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout profile roadmap
+        uses: actions/checkout@v4
+
+      - name: Build weekly portfolio report
+        env:
+          GH_TOKEN: \${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          today=$(date -u +%F)
+          since=$(date -u -d '7 days ago' +%F)
+          report="$RUNNER_TEMP/weekly-portfolio-pulse.md"
+          repos_json=$(gh api "users/Collinomics/repos?per_page=100&type=owner&sort=updated")
+          repo_count=$(echo "$repos_json" | jq 'length')
+          stars=$(echo "$repos_json" | jq '[.[].stargazers_count] | add // 0')
+          forks=$(echo "$repos_json" | jq '[.[].forks_count] | add // 0')
+          top_repos=$(echo "$repos_json" | jq -r 'sort_by(.stargazers_count) | reverse | .[:5][] | "- [\(.name)](\(.html_url)) — \(.stargazers_count) stars"')
+          open_prs=$(gh api search/issues -f q="is:pr author:Collinomics is:open" --jq '.total_count' 2>/dev/null || echo "unavailable")
+          merged_prs=$(gh api search/issues -f q="is:pr author:Collinomics is:merged merged:>=$since" --jq '.total_count' 2>/dev/null || echo "unavailable")
+
+          {
+            echo "# Weekly Portfolio Pulse"
+            echo
+            echo "- **Report date:** $today"
+            echo "- **Window:** $since to $today (UTC)"
+            echo
+            echo "## Public portfolio snapshot"
+            echo
+            echo "- Public repositories returned (maximum 100): $repo_count"
+            echo "- Total stars across returned repositories: $stars"
+            echo "- Total forks across returned repositories: $forks"
+            echo "- Open pull requests authored by Collinomics: $open_prs"
+            echo "- Pull requests merged in the last 7 days: $merged_prs"
+            echo
+            echo "## Most-starred repositories"
+            echo
+            echo "$top_repos"
+            echo
+            echo "## Genuine achievement progress"
+            echo
+            echo "- **Pull Shark:** aim for useful pull requests that are reviewed and merged."
+            echo "- **Pair Extraordinaire:** collaborate on a real change and merge a co-authored pull request."
+            echo "- **Galaxy Brain:** share useful answers in GitHub Discussions that receive accepted answers."
+            echo "- **Starstruck:** build and improve projects that people genuinely want to star."
+            echo
+            echo "These metrics are informational. This report does not create activity or guarantee achievements."
+            echo
+            echo "## Roadmap"
+            cat maintenance/achievement-roadmap.md
+          } > "$report"
+
+          cat "$report"
+
+      - name: Upload weekly pulse
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-portfolio-pulse-\${{ github.run_number }}
+          path: \${{ runner.temp }}/weekly-portfolio-pulse.md
+          if-no-files-found: error
+          retention-days: 30
