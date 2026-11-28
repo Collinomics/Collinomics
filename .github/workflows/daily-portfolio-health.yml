@@ -55,8 +55,8 @@ jobs:
           # Collect local image/link references from HTML and Markdown.
           refs = []
           for attr in ("src", "href"):
-              refs += re.findall(rf'\\b{attr}\\s*=\\s*["\\']([^"\\']+)["\\']', readme, flags=re.I)
-          refs += re.findall(r'!?\\[[^\\]]*\\]\\(([^)]+)\\)', readme)
+              refs += re.findall(rf"""\\b{attr}\\s*=\\s*["']([^"']+)["']""", readme, flags=re.I)
+          refs += re.findall(r"!?\\[[^\\]]*\\]\\(([^)]+)\\)", readme)
 
           local_refs = set()
           for raw in refs:
@@ -103,7 +103,7 @@ jobs:
           lines += [f"- {item}" for item in checks] or ["- None"]
           lines += ["", "## Issues"]
           lines += [f"- {item}" for item in issues] or ["- None"]
-          report = "\\n".join(lines) + "\\n"
+          report = "\n".join(lines) + "\n"
           report_path.write_text(report, encoding="utf-8")
 
           summary = Path(os.environ["GITHUB_STEP_SUMMARY"])
