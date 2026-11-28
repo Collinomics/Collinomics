@@ -55,8 +55,8 @@ jobs:
           # Collect local image/link references from HTML and Markdown.
           refs = []
           for attr in ("src", "href"):
-              refs += re.findall(rf"""\\b{attr}\\s*=\\s*["']([^"']+)["']""", readme, flags=re.I)
-          refs += re.findall(r"!?\\[[^\\]]*\\]\\(([^)]+)\\)", readme)
+              refs += re.findall(rf"""\b{attr}\s*=\s*["']([^"']+)["']""", readme, flags=re.I)
+          refs += re.findall(r"!?\[[^\]]*\]\(([^)]+)\)", readme)
 
           local_refs = set()
           for raw in refs:
