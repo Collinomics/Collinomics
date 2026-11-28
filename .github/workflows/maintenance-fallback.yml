@@ -1,0 +1,102 @@
+name: Maintenance Fallback
+
+on:
+  schedule:
+    # 07:10 Kampala time (UTC+3), after the primary run.
+    - cron: "10 4 * * *"
+  workflow_dispatch:
+    inputs:
+      force_fallback:
+        description: Run the fallback even if the primary maintenance workflow succeeded today
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  actions: read
+  contents: write
+  issues: write
+
+concurrency:
+  group: daily-portfolio-maintenance
+  cancel-in-progress: false
+
+jobs:
+  fallback:
+    name: Run independent checks if the primary run missed or failed
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Decide whether fallback is needed
+        id: decision
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE_FALLBACK: ${{ github.event.inputs.force_fallback || 'false' }}
+        run: |
+          set -euo pipefail
+          if [ "$FORCE_FALLBACK" = "true" ]; then
+            echo "run_fallback=true" >> "$GITHUB_OUTPUT"
+            echo "Fallback manually requested."
+            exit 0
+          fi
+
+          start_time="$(date -u -d "$(date -u +%F) 03:00 UTC" '+%Y-%m-%dT%H:%M:%SZ')"
+          successes="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/daily-portfolio-maintenance.yml/runs?branch=main&per_page=20" --jq "[.workflow_runs[] | select(.event == \"schedule\" and .created_at >= \"$start_time\" and .conclusion == \"success\")] | length")"
+          if [ "$successes" -gt 0 ]; then
+            echo "run_fallback=false" >> "$GITHUB_OUTPUT"
+            echo "Primary maintenance succeeded today; fallback will skip."
+          else
+            echo "run_fallback=true" >> "$GITHUB_OUTPUT"
+            echo "No successful scheduled primary run found today; fallback will run."
+          fi
+
+      - name: Run independent fallback checks
+        id: fallback_check
+        if: steps.decision.outputs.run_fallback == 'true'
+        run: python3 scripts/fallback_maintenance.py
+
+      - name: Publish fallback report commit
+        if: always() && steps.decision.outputs.run_fallback == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A maintenance/fallback-reports maintenance/fallback_latest.md || true
+          if git diff --cached --quiet; then
+            echo "No fallback report was produced or no changes exist."
+          else
+            git commit -m "chore: publish fallback maintenance report [skip ci]"
+            git push origin HEAD:main
+          fi
+
+      - name: Upload fallback report
+        if: always() && steps.decision.outputs.run_fallback == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fallback-maintenance-report-${{ github.run_number }}
+          path: maintenance/fallback-reports/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Open fallback failure alert
+        if: steps.fallback_check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Maintenance fallback failure"
+          existing=$(gh issue list --state open --search "in:title $title" --json number --jq '.[0].number // empty')
+          if [ -z "$existing" ]; then
+            gh issue create --title "$title" --body "The independent fallback maintenance check failed. Review the Actions run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID."
+          fi
+
+      - name: Close fallback alert after recovery
+        if: steps.fallback_check.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh issue list --state open --search "in:title Maintenance fallback failure" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "Fallback maintenance succeeded. Closing this automated alert."
+          fi
