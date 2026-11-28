@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload fallback report
         if: always() && steps.decision.outputs.run_fallback == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fallback-maintenance-report-${{ github.run_number }}
           path: maintenance/fallback-reports/
