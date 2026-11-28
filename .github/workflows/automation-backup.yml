@@ -27,13 +27,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: main
           path: source
 
       - name: Checkout backup branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: automation-backup
           path: backup
