@@ -2,8 +2,8 @@ name: Maintenance Watchdog
 
 on:
   schedule:
-    # 08:15 Kampala time (UTC+3), after daily maintenance and backup sync
-    - cron: "15 5 * * *"
+    # 09:00 Kampala time (UTC+3), after daily backup and weekly repository backup.
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 permissions:
@@ -13,40 +13,87 @@ permissions:
 
 jobs:
   watchdog:
+    name: Check daily maintenance and backups
     runs-on: ubuntu-latest
     steps:
-      - name: Check daily maintenance and workflow backup
+      - name: Check maintenance, failover, and backup freshness
         id: check
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          set -euo pipefail
           repo="$GITHUB_REPOSITORY"
           reason=""
-          latest=$(gh run list --workflow daily-portfolio-health.yml --limit 1 --json conclusion,createdAt,url 2>/dev/null || echo "[]")
-          if [ -z "$latest" ] || [ "$latest" = "[]" ]; then
-            reason="No daily maintenance run could be found."
-          else
-            conclusion=$(echo "$latest" | jq -r '.[0].conclusion // "unknown"')
-            created=$(echo "$latest" | jq -r '.[0].createdAt // ""')
-            url=$(echo "$latest" | jq -r '.[0].url // ""')
-            age_hours=$(python -c 'import sys; from datetime import datetime,timezone; d=datetime.fromisoformat(sys.argv[1].replace("Z","+00:00")); print(int((datetime.now(timezone.utc)-d).total_seconds()/3600))' "$created" 2>/dev/null || echo 9999)
-            if [ "$age_hours" -gt 36 ]; then
-              reason="Daily maintenance run is missing or older than 36 hours (last: $created; $url)."
-            elif [ "$conclusion" != "success" ]; then
-              reason="Latest daily maintenance run concluded '$conclusion' ($url)."
+
+          age_hours() {
+            python -c 'import sys; from datetime import datetime,timezone; d=datetime.fromisoformat(sys.argv[1].replace("Z","+00:00")); print(int((datetime.now(timezone.utc)-d).total_seconds()/3600))' "$1" 2>/dev/null || echo 9999
+          }
+
+          daily=$(gh run list --workflow daily-portfolio-health.yml --limit 1 --json conclusion,createdAt,url)
+          daily_conclusion=$(echo "$daily" | jq -r '.[0].conclusion // "missing"')
+          daily_created=$(echo "$daily" | jq -r '.[0].createdAt // ""')
+          daily_url=$(echo "$daily" | jq -r '.[0].url // ""')
+          daily_age=9999
+          if [ -n "$daily_created" ]; then daily_age=$(age_hours "$daily_created"); fi
+
+          fallback=$(gh run list --workflow maintenance-fallback.yml --limit 1 --json conclusion,createdAt,url)
+          fallback_conclusion=$(echo "$fallback" | jq -r '.[0].conclusion // "missing"')
+          fallback_created=$(echo "$fallback" | jq -r '.[0].createdAt // ""')
+          fallback_url=$(echo "$fallback" | jq -r '.[0].url // ""')
+          fallback_age=9999
+          if [ -n "$fallback_created" ]; then fallback_age=$(age_hours "$fallback_created"); fi
+          fallback_ok=false
+          if [ "$fallback_conclusion" = "success" ] && [ "$fallback_age" -le 36 ]; then fallback_ok=true; fi
+
+          if [ "$daily_age" -gt 36 ] || [ "$daily_conclusion" != "success" ]; then
+            if [ "$fallback_ok" = "true" ]; then
+              echo "Primary maintenance needs attention, but today's fallback succeeded."
+            else
+              reason="$reason Primary daily maintenance is missing, stale, or unsuccessful (last: $daily_created; $daily_url)."
             fi
           fi
-          backup_count=$(gh api "repos/$repo/contents/automation/workflows/current?ref=automation-backup" --jq 'length' 2>/dev/null || echo 0)
-          if [ -z "$backup_count" ] || [ "$backup_count" -lt 1 ]; then
+          if [ "$fallback_age" -gt 36 ]; then
+            reason="$reason Fallback workflow is missing or older than 36 hours."
+          elif [ "$fallback_conclusion" != "success" ]; then
+            reason="$reason Latest fallback workflow concluded '$fallback_conclusion' ($fallback_url)."
+          fi
+
+          sync=$(gh run list --workflow automation-backup.yml --limit 1 --json conclusion,createdAt,url)
+          sync_conclusion=$(echo "$sync" | jq -r '.[0].conclusion // "missing"')
+          sync_created=$(echo "$sync" | jq -r '.[0].createdAt // ""')
+          sync_url=$(echo "$sync" | jq -r '.[0].url // ""')
+          sync_age=9999
+          if [ -n "$sync_created" ]; then sync_age=$(age_hours "$sync_created"); fi
+          if [ "$sync_age" -gt 36 ] || [ "$sync_conclusion" != "success" ]; then
+            reason="$reason Daily automation backup is missing, stale, or unsuccessful (last: $sync_created; $sync_url)."
+          fi
+
+          weekly=$(gh run list --workflow weekly-repository-backup.yml --limit 1 --json conclusion,createdAt,url)
+          weekly_conclusion=$(echo "$weekly" | jq -r '.[0].conclusion // "missing"')
+          weekly_created=$(echo "$weekly" | jq -r '.[0].createdAt // ""')
+          weekly_url=$(echo "$weekly" | jq -r '.[0].url // ""')
+          weekly_age=9999
+          if [ -n "$weekly_created" ]; then weekly_age=$(age_hours "$weekly_created"); fi
+          if [ "$weekly_age" -gt 192 ] || [ "$weekly_conclusion" != "success" ]; then
+            reason="$reason Weekly repository backup is missing, stale, or unsuccessful (last: $weekly_created; $weekly_url)."
+          fi
+
+          workflow_count=$(gh api "repos/$repo/contents/automation/workflows/current?ref=automation-backup" --jq 'length' 2>/dev/null || echo 0)
+          if [ -z "$workflow_count" ] || [ "$workflow_count" -lt 1 ]; then
             reason="$reason Workflow backup branch or current workflow copies are missing."
           fi
+          config_count=$(gh api "repos/$repo/contents/automation/dependabot/current?ref=automation-backup" --jq 'length' 2>/dev/null || echo 0)
+          if [ -z "$config_count" ] || [ "$config_count" -lt 1 ]; then
+            reason="$reason Dependabot configuration backup is missing."
+          fi
+
           echo "reason=$reason" >> "$GITHUB_OUTPUT"
           if [ -n "$reason" ]; then
             echo "Watchdog warning: $reason"
             exit 1
           fi
-          echo "Daily checks and workflow backup are healthy."
+          echo "Daily checks, fallback, and backups are healthy."
 
       - name: Open alert issue if watchdog detects a problem
         if: steps.check.outcome == 'failure'
@@ -55,7 +102,7 @@ jobs:
         run: |
           title="Automated maintenance alert"
           existing=$(gh issue list --state open --search "in:title $title" --json number --jq '.[0].number // empty')
-          body="The watchdog detected a problem with daily maintenance or its workflow backup.\n\nDetails: ${{ steps.check.outputs.reason }}\n\nReview Actions: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions"
+          body="The watchdog detected a problem with daily maintenance, failover, or backup freshness.\n\nDetails: ${{ steps.check.outputs.reason }}\n\nReview Actions: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions"
           if [ -z "$existing" ]; then
             gh issue create --title "$title" --body "$body"
           else
@@ -69,5 +116,5 @@ jobs:
         run: |
           existing=$(gh issue list --state open --search "in:title Automated maintenance alert" --json number --jq '.[0].number // empty')
           if [ -n "$existing" ]; then
-            gh issue close "$existing" --comment "Watchdog confirms the daily checks and workflow backup are healthy again."
+            gh issue close "$existing" --comment "Watchdog confirms daily checks, failover, and backups are healthy again."
           fi
