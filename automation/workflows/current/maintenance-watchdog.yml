@@ -1,0 +1,73 @@
+name: Maintenance Watchdog
+
+on:
+  schedule:
+    # 08:15 Kampala time (UTC+3), after daily maintenance and backup sync
+    - cron: "15 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check daily maintenance and workflow backup
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          repo="$GITHUB_REPOSITORY"
+          reason=""
+          latest=$(gh run list --workflow daily-portfolio-health.yml --limit 1 --json conclusion,createdAt,url 2>/dev/null || echo "[]")
+          if [ -z "$latest" ] || [ "$latest" = "[]" ]; then
+            reason="No daily maintenance run could be found."
+          else
+            conclusion=$(echo "$latest" | jq -r '.[0].conclusion // "unknown"')
+            created=$(echo "$latest" | jq -r '.[0].createdAt // ""')
+            url=$(echo "$latest" | jq -r '.[0].url // ""')
+            age_hours=$(python -c 'import sys; from datetime import datetime,timezone; d=datetime.fromisoformat(sys.argv[1].replace("Z","+00:00")); print(int((datetime.now(timezone.utc)-d).total_seconds()/3600)' "$created" 2>/dev/null || echo 9999)
+            if [ "$age_hours" -gt 36 ]; then
+              reason="Daily maintenance run is missing or older than 36 hours (last: $created; $url)."
+            elif [ "$conclusion" != "success" ]; then
+              reason="Latest daily maintenance run concluded '$conclusion' ($url)."
+            fi
+          fi
+          backup_count=$(gh api "repos/$repo/contents/automation/workflows/current?ref=automation-backup" --jq 'length' 2>/dev/null || echo 0)
+          if [ -z "$backup_count" ] || [ "$backup_count" -lt 1 ]; then
+            reason="$reason Workflow backup branch or current workflow copies are missing."
+          fi
+          echo "reason=$reason" >> "$GITHUB_OUTPUT"
+          if [ -n "$reason" ]; then
+            echo "Watchdog warning: $reason"
+            exit 1
+          fi
+          echo "Daily checks and workflow backup are healthy."
+
+      - name: Open alert issue if watchdog detects a problem
+        if: steps.check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Automated maintenance alert"
+          existing=$(gh issue list --state open --search "in:title $title" --json number --jq '.[0].number // empty')
+          body="The watchdog detected a problem with daily maintenance or its workflow backup.\n\nDetails: ${{ steps.check.outputs.reason }}\n\nReview Actions: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions"
+          if [ -z "$existing" ]; then
+            gh issue create --title "$title" --body "$body"
+          else
+            echo "An open alert already exists: #$existing"
+          fi
+
+      - name: Close alert after recovery
+        if: steps.check.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh issue list --state open --search "in:title Automated maintenance alert" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "Watchdog confirms the daily checks and workflow backup are healthy again."
+          fi

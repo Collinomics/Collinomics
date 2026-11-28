@@ -1,0 +1,123 @@
+name: Daily Portfolio Health
+
+on:
+  schedule:
+    # 06:37 Kampala time (UTC+3); avoids top-of-hour scheduling congestion.
+    - cron: "37 3 * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "assets/**"
+      - ".github/workflows/daily-portfolio-health.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  health-check:
+    name: Check profile repository health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate README and local assets
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os, re, sys
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          readme_path = Path("README.md")
+          report_path = Path("daily-health-report.md")
+          issues = []
+          checks = []
+
+          if not readme_path.is_file():
+              issues.append("README.md is missing.")
+              readme = ""
+          else:
+              readme = readme_path.read_text(encoding="utf-8", errors="replace")
+              checks.append("README.md exists and is readable.")
+
+          # Required profile sections
+          required_sections = ["TECHNOLOGY", "PROJECTS"]
+          for section in required_sections:
+              if section.lower() in readme.lower():
+                  checks.append(f"Required section found: {section}")
+              else:
+                  issues.append(f"Required section not found: {section}")
+
+          # Collect local image/link references from HTML and Markdown.
+          refs = []
+          for attr in ("src", "href"):
+              refs += re.findall(rf"""\b{attr}\s*=\s*["']([^"']+)["']""", readme, flags=re.I)
+          refs += re.findall(r"!?\[[^\]]*\]\(([^)]+)\)", readme)
+
+          local_refs = set()
+          for raw in refs:
+              raw = raw.strip().split()[0].strip("<>")
+              if not raw or raw.startswith(("#", "http://", "https://", "mailto:", "data:", "javascript:")):
+                  continue
+              local_refs.add(raw.split("#", 1)[0].split("?", 1)[0])
+
+          missing = []
+          for ref in sorted(local_refs):
+              if not ref:
+                  continue
+              target = Path(ref)
+              if not target.exists():
+                  missing.append(ref)
+          if missing:
+              issues.extend(f"Local README reference is missing: {ref}" for ref in missing)
+          else:
+              checks.append(f"All {len(local_refs)} local README references exist.")
+
+          # Ensure the contribution-snake workflow is present and configured for this profile.
+          snake_path = Path(".github/workflows/snake.yml")
+          if not snake_path.is_file():
+              issues.append("Contribution-snake workflow is missing.")
+          else:
+              snake = snake_path.read_text(encoding="utf-8", errors="replace")
+              if "Collinomics" in snake and "target_branch: output" in snake:
+                  checks.append("Contribution-snake workflow exists and targets the output branch.")
+              else:
+                  issues.append("Contribution-snake workflow configuration needs review.")
+
+          external_count = len(re.findall(r'https?://', readme))
+          timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+          status = "PASS" if not issues else "NEEDS ATTENTION"
+          lines = [
+              "# Daily Portfolio Health Report",
+              "",
+              f"- **Run time:** {timestamp}",
+              f"- **Status:** {status}",
+              f"- **External URLs in README:** {external_count} (not network-tested; third-party services may be temporarily unavailable)",
+              "",
+              "## Checks passed",
+          ]
+          lines += [f"- {item}" for item in checks] or ["- None"]
+          lines += ["", "## Issues"]
+          lines += [f"- {item}" for item in issues] or ["- None"]
+          report = "\n".join(lines) + "\n"
+          report_path.write_text(report, encoding="utf-8")
+
+          summary = Path(os.environ["GITHUB_STEP_SUMMARY"])
+          summary.write_text(report, encoding="utf-8")
+          print(report)
+          if issues:
+              sys.exit(1)
+          PY
+
+      - name: Save report as an artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-portfolio-health-report-${{ github.run_number }}
+          path: daily-health-report.md
+          if-no-files-found: warn
+          retention-days: 14

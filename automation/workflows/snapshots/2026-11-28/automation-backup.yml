@@ -1,0 +1,61 @@
+name: Daily Automation Backup
+
+on:
+  schedule:
+    # 07:17 Kampala time (UTC+3)
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/**"
+      - "scripts/**"
+      - "maintenance/RESTORE.md"
+      - "maintenance/achievement-roadmap.md"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: automation-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: source
+
+      - name: Checkout backup branch
+        uses: actions/checkout@v4
+        with:
+          ref: automation-backup
+          path: backup
+          token: ${{ github.token }}
+
+      - name: Snapshot workflow and maintenance files
+        shell: bash
+        run: |
+          date_utc=$(date -u +%F)
+          mkdir -p backup/automation/workflows/current backup/automation/workflows/snapshots/$date_utc
+          mkdir -p backup/automation/scripts/current backup/automation/scripts/snapshots/$date_utc
+          cp source/.github/workflows/*.yml backup/automation/workflows/current/
+          cp source/.github/workflows/*.yml backup/automation/workflows/snapshots/$date_utc/
+          cp source/scripts/*.py backup/automation/scripts/current/
+          cp source/scripts/*.py backup/automation/scripts/snapshots/$date_utc/
+          cp source/maintenance/RESTORE.md backup/automation/RESTORE.md
+          cp source/maintenance/achievement-roadmap.md backup/automation/achievement-roadmap.md
+          git -C backup config user.name "github-actions[bot]"
+          git -C backup config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C backup add automation/
+          if git -C backup diff --cached --quiet; then
+            echo "Backup branch already up to date."
+          else
+            git -C backup commit -m "backup: snapshot automation files $date_utc"
+            git -C backup push origin automation-backup
+          fi
