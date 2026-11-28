@@ -41,6 +41,19 @@ jobs:
           if [ -z "$backup_count" ] || [ "$backup_count" -lt 1 ]; then
             reason="$reason Workflow backup branch or current workflow copies are missing."
           fi
+          # Require a recent successful weekly archive/full-history backup as well.
+          backup_runs=$(gh run list --workflow weekly-repository-backup.yml --limit 20 --json conclusion,createdAt,url 2>/dev/null || echo "[]")
+          last_success=$(echo "$backup_runs" | jq -c '[.[] | select(.conclusion=="success")][0] // empty')
+          if [ -z "$last_success" ] || [ "$last_success" = "null" ]; then
+            reason="$reason No successful weekly repository backup has been recorded."
+          else
+            backup_created=$(echo "$last_success" | jq -r '.createdAt // ""')
+            backup_url=$(echo "$last_success" | jq -r '.url // ""')
+            backup_age_hours=$(python -c 'import sys; from datetime import datetime,timezone; d=datetime.fromisoformat(sys.argv[1].replace("Z","+00:00")); print(int((datetime.now(timezone.utc)-d).total_seconds()/3600)' "$backup_created" 2>/dev/null || echo 9999)
+            if [ "$backup_age_hours" -gt 240 ]; then
+              reason="$reason Last successful weekly backup is older than 10 days ($backup_created; $backup_url)."
+            fi
+          fi
           echo "reason=$reason" >> "$GITHUB_OUTPUT"
           if [ -n "$reason" ]; then
             echo "Watchdog warning: $reason"
