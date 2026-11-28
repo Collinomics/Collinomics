@@ -71,7 +71,8 @@ for u in urls[:20]:
 
 wf=sorted((root/".github/workflows").glob("*.yml"))+sorted((root/".github/workflows").glob("*.yaml"))
 if wf:
-    res=subprocess.run(["ruby","-e","require 'yaml'; ARGV.each { |f| YAML.parse_file(f) }",*[str(p) for p in wf],capture_output=True,text=True)
+    cmd=["ruby","-e","require 'yaml'; ARGV.each { |f| YAML.parse_file(f) }"]+[str(p) for p in wf]
+    res=subprocess.run(cmd,capture_output=True,text=True)
     if res.returncode==0: check(f"YAML parsed for {len(wf)} workflow file(s)")
     else: fail("Workflow YAML parse error: "+(res.stderr.strip() or res.stdout.strip()))
 else: fail("No workflow files found")
