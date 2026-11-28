@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 import re
 import subprocess
 import sys
+import os
 
 root = Path.cwd()
 readme = root / "README.md"
@@ -98,10 +99,10 @@ report = [
     "- Starstruck: build projects people choose to star.",
     "- Automation does not guarantee achievements or count as personal contributions.",
 ]
-output = "\\n".join(report) + "\\n"
+output = "\n".join(report) + "\n"
 (report_dir / f"{now.strftime('%Y-%m-%d')}.md").write_text(output, encoding="utf-8")
 (root / "maintenance" / "fallback_latest.md").write_text(output, encoding="utf-8")
-summary = Path(__import__("os").environ.get("GITHUB_STEP_SUMMARY", "/tmp/fallback-summary.md"))
+summary = Path(os.environ.get("GITHUB_STEP_SUMMARY", "/tmp/fallback-summary.md"))
 summary.parent.mkdir(parents=True, exist_ok=True)
 summary.write_text(output, encoding="utf-8")
 print(output)
