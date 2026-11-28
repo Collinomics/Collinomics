@@ -1,0 +1,62 @@
+name: Profile Quality Gate
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "assets/**"
+      - "scripts/**"
+      - ".github/workflows/**"
+      - "maintenance/achievement-roadmap.md"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "assets/**"
+      - "scripts/**"
+      - ".github/workflows/**"
+      - "maintenance/achievement-roadmap.md"
+  schedule:
+    # Weekly Monday 06:00 Kampala time (UTC+3)
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: profile-quality-gate-\${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile maintenance script
+        run: python -m py_compile scripts/daily_maintenance.py
+
+      - name: Run README, local asset, SVG, external link and workflow checks
+        run: python scripts/daily_maintenance.py
+
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: profile-quality-report-\${{ github.run_number }}
+          path: |
+            maintenance/reports/*.md
+            maintenance/latest.md
+          if-no-files-found: warn
+          retention-days: 14
