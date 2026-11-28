@@ -44,7 +44,7 @@ jobs:
           fi
 
           start_time="$(date -u -d "$(date -u +%F) 03:00 UTC" '+%Y-%m-%dT%H:%M:%SZ')"
-          successes="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/daily-portfolio-maintenance.yml/runs?branch=main&per_page=20" --jq "[.workflow_runs[] | select(.event == \"schedule\" and .created_at >= \"$start_time\" and .conclusion == \"success\")] | length")"
+          successes="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/daily-portfolio-health.yml/runs?branch=main&per_page=20" --jq "[.workflow_runs[] | select(.event == \"schedule\" and .created_at >= \"$start_time\" and .conclusion == \"success\")] | length")"
           if [ "$successes" -gt 0 ]; then
             echo "run_fallback=false" >> "$GITHUB_OUTPUT"
             echo "Primary maintenance succeeded today; fallback will skip."
@@ -99,4 +99,14 @@ jobs:
           existing=$(gh issue list --state open --search "in:title Maintenance fallback failure" --json number --jq '.[0].number // empty')
           if [ -n "$existing" ]; then
             gh issue close "$existing" --comment "Fallback maintenance succeeded. Closing this automated alert."
+          fi
+
+      - name: Close primary maintenance alert after fallback recovery
+        if: steps.fallback_check.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh issue list --state open --search "in:title Automated maintenance alert" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "The independent fallback check succeeded. Closing the maintenance alert."
           fi
