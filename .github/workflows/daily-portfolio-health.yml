@@ -5,6 +5,15 @@ on:
     # 06:37 Kampala time (UTC+3)
     - cron: "37 3 * * *"
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "assets/**"
+      - "scripts/**"
+      - ".github/workflows/**"
+      - ".github/dependabot.yml"
   push:
     branches:
       - main
@@ -12,6 +21,8 @@ on:
       - "README.md"
       - "assets/**"
       - "scripts/**"
+      - ".github/workflows/**"
+      - ".github/dependabot.yml"
 
 permissions:
   contents: write
@@ -35,7 +46,7 @@ jobs:
         run: python scripts/daily_maintenance.py
 
       - name: Open alert issue if maintenance fails
-        if: steps.health.outcome == 'failure'
+        if: steps.health.outcome == 'failure' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -70,7 +81,7 @@ jobs:
           retention-days: 30
 
       - name: Close alert after successful checks
-        if: steps.health.outcome == 'success'
+        if: steps.health.outcome == 'success' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
