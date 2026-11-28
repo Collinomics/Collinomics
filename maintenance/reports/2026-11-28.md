@@ -1,8 +1,8 @@
 # Daily Portfolio Maintenance Report
 
-- Run time: 2026-11-28 09:55 UTC
-- Status: PASS
-- External links checked: 5 of 5
+- Run time: 2026-11-28 10:52 UTC
+- Status: PASS WITH WARNINGS
+- External links checked: 20 of 23
 
 ## Passed
 - README exists and is readable
@@ -10,18 +10,34 @@
 - README section present: PROJECTS
 - All 10 local README targets exist
 - 10 local SVG file(s) parse correctly
+- External link OK (200): https://github-stats-extended.vercel.app/api/top-langs/?username=Collinomics&layout=compact&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=00E5FF&text_color=E6EDF3
+- External link OK (200): https://github-stats-extended.vercel.app/api?username=Collinomics&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=00E5FF&icon_color=BB86FC&text_color=E6EDF3
 - External link OK (200): https://github.com/Collinomics
 - External link OK (200): https://github.com/Collinomics/My-profile
 - External link OK (200): https://github.com/Collinomics/kyu-ai-cris
 - External link OK (200): https://github.com/Collinomics?tab=followers
 - External link OK (200): https://github.com/Collinomics?tab=repositories
-- YAML parsed for 5 workflow file(s)
+- External link OK (200): https://img.shields.io/badge/EXPLORE_PROJECTS-482296?style=for-the-badge&logo=github&logoColor=FFFFFF
+- External link OK (200): https://img.shields.io/badge/FOLLOW_ON_GITHUB-121A32?style=for-the-badge&logo=github&logoColor=00E5FF
+- External link OK (200): https://img.shields.io/badge/VIEW_ALL_PUBLIC_REPOSITORIES-101629?style=for-the-badge&logo=github&logoColor=00E5FF
+- External link OK (200): https://img.shields.io/github/followers/Collinomics?style=for-the-badge&logo=github&logoColor=white&label=FOLLOWERS&color=00BEEA&labelColor=101629
+- External link OK (200): https://img.shields.io/github/stars/Collinomics?affiliations=OWNER&style=for-the-badge&label=STARS&color=9654DF&labelColor=101629
+- External link OK (200): https://raw.githubusercontent.com/Collinomics/Collinomics/output/github-contribution-grid-snake.svg
+- External link OK (200): https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2700&pause=1000&color=00E5FF&center=true&vCenter=true&width=860&lines=Hi%2C+I
+- External link OK (200): https://skillicons.dev/icons?i=git,linux,vscode&perline=3
+- External link OK (200): https://skillicons.dev/icons?i=github
+- External link OK (200): https://skillicons.dev/icons?i=js
+- External link OK (200): https://skillicons.dev/icons?i=laravel,flask,tailwind&perline=3
+- External link OK (200): https://skillicons.dev/icons?i=mysql
+- External link OK (200): https://skillicons.dev/icons?i=php,html,css,cpp,c&perline=5
+- Dependabot configuration exists
+- YAML parsed for 7 workflow file(s) and Dependabot
 - Contribution Snake configuration points to the output branch
 - Snake file published: github-contribution-grid-snake.svg
 - Snake file published: github-contribution-grid-snake-dark.svg
 
 ## Warnings
-- None
+- External link checks limited to 20 of 23 links
 
 ## Failures
 - None
