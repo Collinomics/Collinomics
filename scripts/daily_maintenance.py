@@ -71,7 +71,7 @@ for u in urls[:20]:
     elif code>=400: warn(f"External URL returned HTTP {code}: {u}")
     else: check(f"External link OK ({code}): {u}")
 
-wf=sorted((root/".github/workflows").glob("*.yml")) + sorted((root/".github/workflows").glob("*.yaml")))
+wf = sorted((root / ".github" / "workflows").glob("*.yml")) + sorted((root / ".github" / "workflows").glob("*.yaml"))
 dependabot=root/".github/dependabot.yml"
 if wf:
     cmd=["ruby","-e","require 'yaml'; ARGV.each { |f| YAML.parse_file(f) }"]+[str(p) for p in wf]
