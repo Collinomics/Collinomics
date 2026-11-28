@@ -52,7 +52,7 @@ jobs:
           if [ ! -d maintenance/reports ]; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add maintenance/reports
+          git add maintenance/reports maintenance/latest.md
           if git diff --cached --quiet; then
             echo "No report changes to commit."
           else
