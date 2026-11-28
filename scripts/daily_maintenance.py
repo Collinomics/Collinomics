@@ -69,6 +69,23 @@ for u in urls[:20]:
     elif code>=400: warn(f"External URL returned HTTP {code}: {u}")
     else: check(f"External link OK ({code}): {u}")
 
+# Validate remote image sources too; broken icons often hide in img/src or picture/srcset.
+image_srcs=re.findall(r'''<img\b[^>]*\bsrc\s*=\s*["'](https?://[^"']+)["']''',text,flags=re.I)
+md_images=re.findall(r'''!\[[^\]]*\]\((https?://[^)]+)\)''',text)
+srcsets=re.findall(r'''<source\b[^>]*\bsrcset\s*=\s*["']([^"']+)["']''',text,flags=re.I)
+for srcset in srcsets:
+    for candidate in srcset.split(","):
+        candidate=candidate.strip().split()[0] if candidate.strip() else ""
+        if candidate.startswith(("http://","https://")):
+            image_srcs.append(candidate)
+image_urls=sorted(set(u.strip().rstrip(".,") for u in image_srcs+md_images if u.startswith(("http://","https://"))))
+if len(image_urls)>20: warn(f"External image checks limited to 20 of {len(image_urls)} image sources")
+for u in image_urls[:20]:
+    code=status(u)
+    if code is None: warn(f"External image timed out: {u}")
+    elif code>=400: warn(f"External image returned HTTP {code}: {u}")
+    else: check(f"External image OK ({code}): {u}")
+
 wf=sorted((root/".github/workflows").glob("*.yml"))+sorted((root/".github/workflows").glob("*.yaml"))
 if wf:
     cmd=["ruby","-e","require 'yaml'; ARGV.each { |f| YAML.parse_file(f) }"]+[str(p) for p in wf]
@@ -88,7 +105,7 @@ for file in ("github-contribution-grid-snake.svg","github-contribution-grid-snak
     else: warn(f"Snake output not currently reachable: {file}")
 
 state="FAIL" if failures else ("PASS WITH WARNINGS" if warnings else "PASS")
-lines=["# Daily Portfolio Maintenance Report","",f"- Run time: {stamp}",f"- Status: {state}",f"- External links checked: {min(len(urls),20)} of {len(urls)}","","## Passed"]
+lines=["# Daily Portfolio Maintenance Report","",f"- Run time: {stamp}",f"- Status: {state}",f"- External links checked: {min(len(urls),20)} of {len(urls)}",f"- External images checked: {min(len(image_urls),20)} of {len(image_urls)}","","## Passed"]
 lines += [f"- {v}" for v in passed] or ["- None"]
 lines += ["","## Warnings"] + ([f"- {v}" for v in warnings] or ["- None"])
 lines += ["","## Failures"] + ([f"- {v}" for v in failures] or ["- None"])
