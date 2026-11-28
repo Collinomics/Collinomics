@@ -12,7 +12,6 @@ on:
       - ".github/workflows/**"
       - "scripts/**"
       - ".github/dependabot.yml"
-      - ".github/dependabot.yml"
       - "maintenance/RESTORE.md"
       - "maintenance/achievement-roadmap.md"
 
@@ -50,9 +49,6 @@ jobs:
           cp source/.github/workflows/*.yml backup/automation/workflows/snapshots/$date_utc/
           cp source/scripts/*.py backup/automation/scripts/current/
           cp source/scripts/*.py backup/automation/scripts/snapshots/$date_utc/
-          mkdir -p backup/automation/dependabot/current backup/automation/dependabot/snapshots/$date_utc
-          cp source/.github/dependabot.yml backup/automation/dependabot/current/
-          cp source/.github/dependabot.yml backup/automation/dependabot/snapshots/$date_utc/
           mkdir -p backup/automation/dependabot/current backup/automation/dependabot/snapshots/$date_utc
           cp source/.github/dependabot.yml backup/automation/dependabot/current/
           cp source/.github/dependabot.yml backup/automation/dependabot/snapshots/$date_utc/
